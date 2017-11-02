@@ -1,0 +1,23 @@
+{% load flexiform_extras %}
+
+{% comment %}
+  Context passed in BaseForm.render
+{% endcomment %}
+
+
+{% for field_group in grouped_fields %}
+  {% if field_group.type == 'fieldset' %}
+    {% include 'flexiform/form/parts/fieldset.html' with fieldset=field_group %}
+  {% elif field_group.type == 'row' %}
+    {% include 'flexiform/form/parts/row.html' with row=field_group %}
+  {% else %}
+    {# Start of single field #}
+    {% with field=form|keyvalue:field_group %}
+      {% include 'flexiform/form/parts/field.html' %}
+    {% endwith %}
+    {# End of single field #}
+  {% endif %}
+{% empty %}
+  {# Default form (no groups) #}
+  {{ form.as_p }}
+{% endfor %}

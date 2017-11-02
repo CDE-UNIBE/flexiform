@@ -1,0 +1,92 @@
+{% comment %}
+  This is basically much the same as template "gis/openlayers.html" with a few
+  changes. The initial template did not work properly because OpenLayers
+  (through the widget's Media class) is loaded with the other JS assets at the
+  end of the body tag. However, this template requires the "ol" namespace and
+  wants to create a new MapWidget in its inline JS code, both of which are not
+  yet available. Therefore, the following modifications were made:
+
+  * JS variable "base_layer" is set to "null". This variable is later set in
+    "js/map_forms.js", where it is set to an OSM layer.
+  * The MapWidget is not created rightaway. Instead, the name and options are
+    pushed to a stack (window.MapWidgetsQueue) from which MapWidgets are created
+    later in "js/map_forms.js".
+  * default_lat and default_lon are added to the map's options.
+  * Map div is not floating
+  * Search box (Google Places) was added.
+{% endcomment %}
+
+{% load i18n %}
+{% load l10n %}
+{% load compress %}
+{% load svg %}
+
+
+<style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+  {% if not display_raw %}#{{ id }} { display: none; }{% endif %}
+  {% endblock %}
+</style>
+
+{% if not disabled %}
+  <div class="callout primary">{% svg_icon 'info' %}
+    <p class="helptext-text">{% trans "Only the point on the map is submitted. Other fields (search or GPS field) next to the map are only used to zoom to a location or place a point on the map. These fields are not submitted." %}</p>
+    <p class="helptext-text">{% trans "Only one point can be on the map!" %}</p>
+  </div>
+{% endif %}
+
+<div id="{{ id }}_div_map" class="row small-12 columns small-collapse">
+  <div id="{{ id }}_map" class="small-{% if disabled %}12{% else %}8{% endif %} columns form-map-container">&nbsp;</div>
+  {% if not disabled %}
+    <div class="small-4 columns form-map-options">
+      <fieldset class="fieldset">
+        <legend>{% trans "Search and zoom to location" %}</legend>
+        <input type="text" id="{{ id }}_map_search">
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend>{% trans "GPS coordinates" %}</legend>
+        <div class="row small-12 columns small-collapse js-form-map-coords">
+          <div class="small-12 columns">
+            <p>Example: 46.9526, 7.4352</p>
+            <p class="coords-feedback js-form-map-coords-feedback"></p>
+          </div>
+          <div class="small-10 columns">
+            <input type="text" class="js-form-map-coords-input">
+          </div>
+          <a href="#" class="button primary" onclick="javascript:return {{ module }}.parseCoordinates(this)">{% trans "Go" %}</a>
+        </div>
+      </fieldset>
+      <span class="clear_features"><a class="button alert" href="javascript:{{ module }}.clearFeatures()">{% svg_icon 'bin' %}{% trans "Delete all Features" %}</a></span>
+    </div>
+  {% endif %}
+  {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
+  <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
+  {% compress js %}
+    <script type="text/javascript">
+      {% block map_options %}var map_options = {};{% endblock %}
+      {% block base_layer %}
+        var base_layer = null;
+      {% endblock %}
+      {% block options %}var options = {
+        base_layer: base_layer,
+        geom_name: '{{ geom_type }}',
+        id: '{{ id }}',
+        map_id: '{{ id }}_map',
+        map_options: map_options,
+        map_srid: {{ map_srid|unlocalize }},
+        name: '{{ name }}',
+        default_lon: {{ default_lon|unlocalize }},
+        default_lat: {{ default_lat|unlocalize }},
+        disabled: {{ disabled|yesno:"true,false" }}
+      };
+      {% endblock %}
+
+      if (!window.MapWidgetsQueue) {
+        window.MapWidgetsQueue = [];
+      }
+      window.MapWidgetsQueue.push({
+        name: '{{ module }}',
+        options: options
+      });
+    </script>
+{% endcompress %}
+</div>

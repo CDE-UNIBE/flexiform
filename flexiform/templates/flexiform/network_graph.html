@@ -1,0 +1,17 @@
+{% load static %}
+
+<div id="{{ div_id }}" class="network-graph-svg"><!-- SVG --></div>
+
+<script>
+  $.getScript("{% static 'js/network-graph.js' %}", function() {
+      loadNetworkGraph(
+          {
+              "nodes": {{ nodes|safe }},
+              "links": {{ links|safe }}
+          },
+          '{{ div_id|safe }}',
+          {{ graph_options|safe }},
+          "{% static 'js/d3-min.js' %}"
+      );
+  });
+</script>

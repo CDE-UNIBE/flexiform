@@ -1,0 +1,11 @@
+__pycache__
+
+# Ignore node modules and static files
+/node_modules
+/static
+
+# pytest and coverage
+.cache/*
+.coverage
+htmlcov/*
+geckodriver.log

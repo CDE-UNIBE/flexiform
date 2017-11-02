@@ -1,0 +1,54 @@
+{% load i18n %}
+{% load svg %}
+
+
+<div class="{{ widget.name }}-container columns-widget">
+
+  {% if field_options.helptext %}
+    <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">{{ field_options.helptext|safe }}</p></div>
+  {% endif %}
+
+  {% if disabled and widget.subwidgets|length == 1 and not widget.subwidgets.0.value %}
+    <div class="row">
+      <div class="columns small-12">
+        <div class="callout form-link-details">
+        {% trans "No links selected yet." %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% for widget in widget.subwidgets %}
+
+    <div class="row js-form-row js-form-link-row">
+      {# Hidden ID input #}
+      {% include widget.template_name %}
+
+      <div class="columns small-12{% if show_delete_buttons %} columns-widget-narrow-column{% endif %}">
+        {# Search field #}
+        {% if not disabled %}
+          <div class="js-form-search-link-search" style="display: none;">
+            <input type="search" class="js-form-search-link-input" data-search-list-url="{% url field_options.route_app_name|add:':search_list' %}" placeholder="{% trans "Search" %}">
+          </div>
+        {% endif %}
+        {# Details field (content loaded asynchroniously #}
+        <div class="js-form-search-link-details" data-search-detail-url="{% url field_options.route_app_name|add:':search_detail' 99 %}" data-disabled="{{ disabled|yesno:"1,0" }}">{% svg_icon 'spinner' rotate=True %}</div>
+      </div>
+
+      {% if show_delete_buttons %}
+        <span class="columns-widget-delete">
+          <a href="#" class="js-form-delete-row">{% svg_icon 'bin' %}&nbsp;</a></span>
+      {% endif %}
+
+    </div>
+
+  {% endfor %}
+</div>
+
+{% if show_add_button %}
+  <div class="row">
+    <div class="small-12 columns">
+      <a href="#" class="js-form-add-row">{% svg_icon 'plus' %}{% trans "Add" %}</a>
+    </div>
+  </div>
+{% endif %}

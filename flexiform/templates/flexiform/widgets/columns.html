@@ -1,0 +1,45 @@
+{% load flexiform_extras i18n svg %}
+
+
+<div class="{{ widget.name }}-container columns-widget">
+  <div class="row">
+    {% for label in labels %}
+      <div class="columns small-{{ columns|index:forloop.counter0 }}">
+        <label>{{ label }}</label>
+      </div>
+    {% endfor %}
+  </div>
+  {% for widget in widget.subwidgets %}
+    {% if forloop.first %}
+      {% comment %}Start a new row for the first element{% endcomment %}
+      <div class="row js-form-row">
+    {% endif %}
+
+    <div class="columns small-{{ columns|index:forloop.counter0 }}{% if forloop.counter|divisibleby:columns_per_row and show_delete_buttons %} columns-widget-narrow-column{% endif %}">
+      {% include widget.template_name %}
+    </div>
+
+    {% if forloop.counter|divisibleby:columns_per_row %}
+      {% comment %}
+        Add 'delete' button on the right and close row
+      {% endcomment %}
+      {% if show_delete_buttons %}
+        <span class="columns-widget-delete">
+          <a href="#" class="js-form-delete-row">{% svg_icon 'bin' %}&nbsp;</a></span>
+      {% endif %}
+      </div>
+      {% comment %}
+        Start a new row if this is not the last element
+      {% endcomment %}
+      {% if not forloop.last %}<div class="row js-form-row">{% endif %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% if show_add_button %}
+  <div class="row">
+    <div class="small-12 columns">
+      <a href="#" class="js-form-add-row">{% svg_icon 'plus' %}{% trans "Add" %}</a>
+    </div>
+  </div>
+{% endif %}

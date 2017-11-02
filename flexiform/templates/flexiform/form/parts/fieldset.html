@@ -1,0 +1,42 @@
+{% load flexiform_extras svg %}
+
+
+{% if fieldset.children|length > 1 or fieldset.border is True %}
+  {# Show a (bordered) fieldset #}
+  <fieldset class="fieldset">
+    {% if fieldset.label %}
+      <legend>{{ fieldset.label }}</legend>
+    {% endif %}
+
+    {% if fieldset.helptext %}
+      <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">{{ fieldset.helptext|safe }}</p></div>
+    {% endif %}
+
+    {% for child in fieldset.children %}
+      {% if child.type == 'row' %}
+        {# Row #}
+        {% with row=child %}
+          {% include 'flexiform/form/parts/row.html' %}
+        {% endwith %}
+      {% else %}
+        {# Field #}
+        {% with field=form|keyvalue:child %}
+          {% include 'flexiform/form/parts/field.html' %}
+        {% endwith %}
+      {% endif %}
+    {% endfor %}
+  </fieldset>
+{% else %}
+  {# No (bordered) fieldset #}
+  {% if fieldset.children.0.type == 'row' %}
+    {# Row #}
+    {% with row=fieldset.children.0 %}
+      {% include 'flexiform/form/parts/row.html' %}
+    {% endwith %}
+  {% else %}
+    {# Field #}
+    {% with field=form|keyvalue:fieldset.children.0 %}
+      {% include 'flexiform/form/parts/field.html' %}
+    {% endwith %}
+  {% endif %}
+{% endif %}

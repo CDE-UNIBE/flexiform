@@ -1,0 +1,80 @@
+{% load flexiform_extras i18n svg %}
+
+{% comment %}
+
+  It is assumed that there are 2 hidden input fields for each row (to_id and
+  through_id). In the place of these hidden fields, a search field is rendered
+  (2 columns wide) which allows to search for links using jquery's autocomplete.
+
+{% endcomment %}
+
+
+{% if not disabled %}
+  <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">Search an item by name or by its questionnaire ID. If the item does not yet exist, you can <a href="{% url field_options.route_app_name|add:':add' %}">create a new one</a>.</p></div>
+{% endif %}
+
+<div class="{{ widget.name }}-container columns-widget">
+  <div class="row">
+    {# Label for search field spanning 2 columns #}
+    <div class="columns small-{{ columns.0|add:columns.1 }}">
+      <label>{% trans "Link" %}</label>
+    </div>
+    {% for label in labels %}
+      {# Normal field labels #}
+      {% with index=forloop.counter0|add:2 %}
+      <div class="columns small-{{ columns|index:index }}">
+        <label>{{ label }}</label>
+      </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+  {% for widget in widget.subwidgets %}
+    {% if forloop.first %}
+      {% comment %}Start a new row for the first element{% endcomment %}
+      <div class="row js-form-row js-form-link-row">
+    {% endif %}
+
+    {% if forloop.counter0|divisibleby:columns_per_row %}
+      {# For each row, render a search field spanning 2 columns #}
+      <div class="columns small-{{ columns.0|add:columns.1 }}">
+        {# Search field #}
+        <div class="js-form-search-link-search" style="display: none;">
+          <input type="search" class="js-form-search-link-input" data-search-list-url="{% url field_options.route_app_name|add:':search_list' %}" placeholder="{% trans "Search" %}">
+        </div>
+        {# Details field (content loaded asynchroniously #}
+        <div class="js-form-search-link-details" data-search-detail-url="{% url field_options.route_app_name|add:':search_detail' 99 %}" data-disabled="{{ disabled|yesno:"1,0" }}">{% svg_icon 'spinner' rotate=True %}</div>
+      </div>
+    {% endif %}
+
+    {% if widget.type == 'hidden' %}
+      {% include widget.template_name %}
+    {% else %}
+      <div class="columns small-{{ columns|index:forloop.counter0 }}{% if forloop.counter|divisibleby:columns_per_row and show_delete_buttons %} columns-widget-narrow-column{% endif %}">
+        {% include widget.template_name %}
+      </div>
+    {% endif %}
+
+    {% if forloop.counter|divisibleby:columns_per_row %}
+      {% comment %}
+        Add 'delete' button on the right and close row
+      {% endcomment %}
+      {% if show_delete_buttons %}
+        <span class="columns-widget-delete">
+          <a href="#" class="js-form-delete-row">{% svg_icon 'bin' %}&nbsp;</a></span>
+      {% endif %}
+      </div>
+      {% comment %}
+        Start a new row if this is not the last element
+      {% endcomment %}
+      {% if not forloop.last %}<div class="row js-form-row js-form-link-row">{% endif %}
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% if show_add_button %}
+  <div class="row">
+    <div class="small-12 columns">
+      <a href="#" class="js-form-add-row">{% svg_icon 'plus' %}{% trans "Add" %}</a>
+    </div>
+  </div>
+{% endif %}

@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+
+{% load i18n %}
+{% load static %}
+{% load sekizai_tags %}
+{% load compress %}
+{% load svg %}
+
+
+{% block content %}
+  {% if wizard.form.errors %}
+    {% for error in wizard.form.field_errors %}
+      <div class="callout alert">{{ error }}</div>
+    {% endfor %}
+    {% for error in wizard.form.non_field_errors %}
+      <div class="callout alert">{{ error }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if object %}
+    <p class="subheader">
+      {% trans "You are currently editing:" %}
+      <a href="{{ object.get_absolute_url }}">{{ object }}</a>
+    </p>
+  {% endif %}
+
+  <div class="row">
+    <div class="columns small-8">
+      <h2>{{ labelled_step }}</h2>
+    </div>
+    <div class="columns small-4">
+      <select id="js-form-sections-menu"{% if not object %} disabled="disabled"{% endif %}>
+        <option value="">{% trans "--- Jump to specific section ---" %}</option>
+        {% if object %}
+          {% for step in labelled_steps %}
+            <option {% if step.0 == view.steps.current %}class="selected" {% endif %}value="{% url app_name|add:':edit' object.id step.0 %}">{{ step.1 }}</option>
+          {% endfor %}
+        {% endif %}
+      </select>
+    </div>
+  </div>
+
+  <div class="progress" role="progressbar" tabindex="0" aria-valuenow="{{ step_percent }}" aria-valuemin="0" aria-valuetext="{{ step_percent }} percent" aria-valuemax="100">
+    <span class="progress-meter" style="width: {{ step_percent }}%">
+      <p class="progress-meter-text">{{ step_position }} / {{ wizard.steps.count }}</p>
+    </span>
+  </div>
+
+  <form action="" method="post" class="js-main-form main-form">
+    {% csrf_token %}
+      {% if helptext and not disabled %}
+        <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">{{ helptext }}</p></div>
+      {% endif %}
+
+      {{ wizard.management_form }}
+      {{ wizard.form.render }}
+      <div class="form-buttons">
+        {% if wizard.steps.prev %}
+          <button class="button" type="submit" data-save-step="{{ wizard.steps.prev }}">{% svg_icon 'caret_left' %}{% trans "Previous" %}</button>
+        {% endif %}
+        {% if wizard.steps.next %}
+          <button class="button" type="submit">{% trans "Next" %}{% svg_icon 'caret_right' classes='right' %}</button>
+        {% else %}
+          <button class="button success" type="submit">{% svg_icon 'checkmark' %}{% trans "Finish" %}</button>
+        {% endif %}
+      </div>
+  </form>
+
+  {% addtoblock "js" %}
+    {% compress js %}
+      {{ wizard.form.media.js }}
+      <script src="{% static 'js/forms-min.js' %}"></script>
+    {% endcompress %}
+  {% endaddtoblock %}
+
+  {% addtoblock "css" %}
+    {% compress css %}
+      {{ wizard.form.media.css }}
+    {% endcompress %}
+  {% endaddtoblock %}
+
+{% endblock %}

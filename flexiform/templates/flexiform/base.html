@@ -1,0 +1,20 @@
+{% load sekizai_tags %}
+
+{% comment %}
+
+  Override this template in your project. This is mainly for documentation
+  purposes, showing which blocks are required.
+
+{% endcomment %}
+
+
+<html>
+  <head>
+    {% render_block "css" %}
+  </head>
+</html>
+<body>
+  {% block content %}{% endblock %}
+  {% render_block "js" %}
+</body>
+

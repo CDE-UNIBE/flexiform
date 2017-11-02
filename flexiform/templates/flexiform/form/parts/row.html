@@ -1,0 +1,12 @@
+{% load flexiform_extras %}
+
+
+<div class="row form-row">
+  {% for child in row.children %}
+    <div class="columns small-{{ row.col_widths|index:forloop.counter0 }}">
+      {% with field=form|keyvalue:child %}
+        {% include 'flexiform/form/parts/field.html' %}
+      {% endwith %}
+    </div>
+  {% endfor %}
+</div>

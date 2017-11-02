@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+
+{% load sekizai_tags %}
+{% load static %}
+
+
+{% block content %}
+  <select id="chart-field-select">
+    {% for section_keyword, section_options in chart_fields.items %}
+      <optgroup label="{{ section_options.label }}">
+        {% for question_keyword, question in section_options.fields.items %}
+          {% with val=section_keyword|add:"__"|add:question_keyword %}
+          <option value="{{ val }}"{% if val == request.GET.key %} selected="selected"{% endif %}>{{ question.label }}</option>
+          {% endwith %}
+        {% endfor %}
+      </optgroup>
+    {% endfor %}
+  </select>
+
+  <div style="width: 100%">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  {% addtoblock 'js' %}
+    <script>
+      var barChartData = {
+            labels: {{ labels|safe }},
+            datasets: {{ values|safe }}
+        };
+        window.onload = function() {
+            var ctx = document.getElementById("canvas").getContext("2d");
+            new Chart(ctx, {
+                type: 'bar',
+                data: barChartData,
+                options: {
+                    title:{
+                        display: true,
+                        text: "{{ title|safe }}"
+                    },
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    responsive: true,
+                    scales: {
+                        xAxes: [{
+                            stacked: true,
+                            ticks: {
+                              autoSkip : false
+                            }
+                        }],
+                        yAxes: [{
+                            stacked: true
+                        }]
+                    }
+                }
+            });
+        };
+    </script>
+    <script src="{% static 'js/charts-min.js' %}"></script>
+  {% endaddtoblock %}
+{% endblock %}

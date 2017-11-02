@@ -1,0 +1,15 @@
+{% extends 'flexiform/base.html' %}
+
+{% load i18n %}
+{% load svg %}
+
+
+{% block content %}
+  <h3>{% trans "Are you sure?" %}</h3>
+  <p>{% blocktrans %}You are about to delete {{ object }}. This will delete all involvements of the object, all links to other objects will be deleted. Please confirm.{% endblocktrans %}</p>
+  <form action="" method="post">
+    {% csrf_token %}
+    <button class="button" onclick="window.history.go(-1);">{% svg_icon 'cross' %}{% trans "Cancel" %}</button>
+    <button class="button alert">{% svg_icon 'bin' %}{% trans "Delete" %}</button>
+  </form>
+{% endblock %}
