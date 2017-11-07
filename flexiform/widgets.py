@@ -1,4 +1,4 @@
-from django.contrib.gis.forms import OSMWidget
+# from django.contrib.gis.forms import OSMWidget
 from django.forms import widgets
 
 from .conf import settings
@@ -136,23 +136,23 @@ class DatepickerWidget(widgets.DateInput):
         super(DatepickerWidget, self).__init__(attrs, format)
 
 
-class MapWidget(OSMWidget):
+# class MapWidget(OSMWidget):
 
-    class Media:
-        extend = False
-        css = {
-            'all': (
-                'css/ol.css',
-                'gis/css/ol3.css',
-            )
-        }
-        js = (
-            'js/ol-min.js',
-            'gis/js/OLMapWidget.js',
-            'js/map_forms-min.js',
-        )
+#     class Media:
+#         extend = False
+#         css = {
+#             'all': (
+#                 'css/ol.css',
+#                 'gis/css/ol3.css',
+#             )
+#         }
+#         js = (
+#             'js/ol-min.js',
+#             'gis/js/OLMapWidget.js',
+#             'js/map_forms-min.js',
+#         )
 
-    template_name = 'flexiform/widgets/map.html'
+#     template_name = 'flexiform/widgets/map.html'
 
 
 class ResizableMultiSelectWidget(widgets.SelectMultiple):
