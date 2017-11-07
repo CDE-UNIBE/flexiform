@@ -1,4 +1,12 @@
+# Generated files
+*.log
+defaultlog.*
+*.pot
+*.pyc
 __pycache__
+.idea
+build
+*.egg-info/
 
 # Ignore node modules and static files
 /node_modules
@@ -9,3 +17,6 @@ __pycache__
 .coverage
 htmlcov/*
 geckodriver.log
+
+# virtualenv
+venv/
