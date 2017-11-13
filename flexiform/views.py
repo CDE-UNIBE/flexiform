@@ -89,7 +89,7 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
         # It is necessary to reset the storage before rendering each step.
         # Otherwise data from the storage will still be used to populate the
         # form, even though explicitly session storage is used. Did not know
-        # where else to put this line ...
+        # where else to put this line.
         self.storage.reset()
         return super().get(*args, **kwargs)
 
