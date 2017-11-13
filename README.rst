@@ -33,27 +33,6 @@ set up.
         )
 
 
-Combine forms
--------------
-Combine multiple forms for the same model. The 'Actor' model will now include
-all fields defined in the forms as properties (e.g. Actor.meta_translator).
-
-.. code-block:: python
-
-    from flexiform.decorators import model_structure
-    from flexiform.json_structures import JsonStructure
-
-    from . import forms
-    from .models import Actor
-
-
-    @model_structure(Actor)
-    class ActorStructure(JsonStructure):
-        form_list = (
-            ('meta', forms.MetaInformationForm),
-            ('organisation', forms.OrganisationForm),
-        )
-
 Model
 -----
 The only required filed called 'data', which must be able to store JSON-data.
@@ -66,6 +45,7 @@ The only required filed called 'data', which must be able to store JSON-data.
         interview_location = models.PointField(null=True, blank=True, srid=4326)
         created = models.DateTimeField(auto_now_add=True, editable=False)
         data = JSONField(null=True, blank=True)
+
 
 Views
 -----
@@ -80,6 +60,7 @@ ListView or SearchView are provided as well.
 
     class ActorEditView(core_views.BaseFormMixin):
         model = Actor
+
 
 URLs
 ----
