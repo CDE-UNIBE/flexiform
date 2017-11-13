@@ -25,20 +25,64 @@ from .json_structures import JsonStructure
 from .conf import settings
 
 
-class BaseFormMixin(LoginRequiredMixin, NamedUrlWizardView):
+class RetrieveMixin:
+    """
+    Get the object based on the from current form.
+    """
+
+    def get_object(self, form):
+        if 'pk' not in self.kwargs:
+            return None
+        return get_object_or_404(klass=form.Meta.model, id=self.kwargs['pk'])
+
+    def get_form_initial(self, step: str) -> dict:
+        if hasattr(super(), 'get_form_initial'):
+            initial = super().get_form_initial(step)
+        else:
+            initial = {}
+
+        extra_method_name = f'get_{step}_initial'
+        if not initial and hasattr(self, extra_method_name):
+            initial.update(getattr(self, extra_method_name)())
+
+        if self.object:
+            form = dict(self.form_list).get(step)
+            if form:
+                initial.update(
+                    form.from_model(instance=self.object)
+                )
+
+        return initial
+
+    @property
+    def model_name(self):
+        return self.object.__class__.__name__.lower()
+
+
+class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
     """
     Shared functionality for add/edit wizard views.
 
-    * Load initial data from form-json
     * Save data after each 'submit'
     """
     # Don't put data to session, it's written and read from the ORM
     storage_name = 'flexiform.wizard.storage.no_session.NoSession'
     template_name = 'flexiform/form.html'
-    model = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        """
+        Redirect to fist step if no step is set; set object to 'self'. 
+        """
+        try:
+            step = self.kwargs['step']
+        except KeyError:
+            first_step = list(self.form_list.keys())[0]
+            first_step_model = self.form_list[first_step].Meta.model.__name__
+            view_name = f'{first_step_model.lower()}:add'
+            return HttpResponseRedirect(reverse(
+                view_name, kwargs={'step': first_step})
+            )
+        self.object = self.get_object(form=self.form_list[step])
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, *args, **kwargs):
@@ -49,27 +93,6 @@ class BaseFormMixin(LoginRequiredMixin, NamedUrlWizardView):
         self.storage.reset()
         return super().get(*args, **kwargs)
 
-    def get_object(self):
-        if 'pk' not in self.kwargs:
-            return None
-        return get_object_or_404(klass=self.model, id=self.kwargs['pk'])
-
-    def get_form_initial(self, step: str) -> dict:
-        initial = super().get_form_initial(step)
-
-        extra_method_name = f'get_{step}_initial'
-        if not initial and hasattr(self, extra_method_name):
-            initial.update(getattr(self, extra_method_name)())
-
-        if self.object:
-            form = dict(self.model._meta.structure.form_list).get(step)
-            if form:
-                initial.update(
-                    form.from_model(instance=self.object)
-                )
-
-        return initial
-
     def process_step(self, form: BaseForm) -> dict:
         # setting the object is important for the next step url.
         self.object = form.save(self.kwargs.get('pk', None))
@@ -77,28 +100,27 @@ class BaseFormMixin(LoginRequiredMixin, NamedUrlWizardView):
 
     def get_context_data(self, form: BaseForm, **kwargs) -> dict:
         context = super().get_context_data(form, **kwargs)
-        current_step = form.Meta.keyword
         labelled_steps = list(self.get_labelled_steps())
         step_position = [
-            s[0] for s in labelled_steps].index(current_step) + 1
+            s[0] for s in labelled_steps].index(self.kwargs['step']) + 1
         context.update({
             'object': self.object,
             'labelled_steps': labelled_steps,
-            'labelled_step': dict(labelled_steps).get(current_step),
+            'labelled_step': dict(labelled_steps).get(self.kwargs['step']),
             'helptext': getattr(form.Meta, 'helptext', ''),
             'step_position': step_position,
             'step_percent': step_position / context['wizard']['steps'].count * 100,
-            'app_name': self.model.__name__.lower(),
+            'app_name': self.model_name,
         })
         return context
 
     def get_step_url(self, step: str) -> str:
         if self.object:
-            return reverse(f'{self.model.__name__.lower()}:edit', kwargs={
+            return reverse(f'{self.model_name}:edit', kwargs={
                 'step': step,
                 'pk': self.object.id
             })
-        return reverse(f'{self.model.__name__.lower()}:add', kwargs={
+        return reverse(f'{self.model_name}:add', kwargs={
             'step': step,
         })
 
@@ -131,13 +153,13 @@ class BaseFormMixin(LoginRequiredMixin, NamedUrlWizardView):
         if self.request.POST.get('load_step'):
             return self.render_next_step(form, **kwargs)
         item_url = reverse(
-            f'{self.model.__name__.lower()}:detail',
+            f'{self.model_name}:detail',
             kwargs={'pk': self.object.id})
         messages.success(
             self.request,
             f'The <a href="{item_url}">entry</a> was successfully saved.')
         return HttpResponseRedirect(redirect_to=reverse(
-            f'{self.model.__name__.lower()}:list'
+            f'{self.model_name}:list'
         ))
 
     def get_labelled_steps(self):
@@ -149,7 +171,7 @@ class BaseFormMixin(LoginRequiredMixin, NamedUrlWizardView):
         :return: list. A list of tuples containing (1) the keyword and (2) the
             label of the step.
         """
-        for keyword, form in self.model._meta.structure.form_list:
+        for keyword, form in self.form_list.items():
             try:
                 label = form.Meta.label
             except AttributeError:
@@ -613,20 +635,21 @@ class NetworkGraphMixin:
         return context
 
 
-class BaseFormViewMixin:
-
-    model = None
-    object = None
+class BaseFormViewMixin(RetrieveMixin, TemplateView):
 
     # As multiple forms are rendered on a single page, it is necessary to
     # collect the unique media assets instead of letting each form render its
     # own (possibly duplicate) assets
     form_media = Media()
 
+    def get(self, request, *args, **kwargs):
+        self.forms = self.get_readonly_forms()
+        return super().get(request=request, *args, **kwargs)
+
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         context.update({
-            'forms': self.get_readonly_forms(),
+            'forms': self.forms,
             'form_media': self.form_media,
         })
         return context
@@ -640,12 +663,9 @@ class BaseFormViewMixin:
             and (2) the form itself.
         """
         ret = []
-        for keyword, form in self.model._meta.structure.form_list:
-            initial = {}
-            extra_method_name = f'get_{keyword}_initial'
-            if hasattr(self, extra_method_name):
-                initial.update(getattr(self, extra_method_name)())
-            initial.update(form.from_model(self.object))
+        for keyword, form in self.form_list:
+            self.object = self.get_object(form=form)
+            initial = self.get_form_initial(keyword)
             form_instance = form(prefix=keyword, initial=initial, readonly=True)
 
             # Add form media

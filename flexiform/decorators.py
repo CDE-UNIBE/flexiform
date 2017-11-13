@@ -1,18 +1,18 @@
 from .json_structures import auto_spawn
 
 
-def model_structure(model, **options):
+def json_modelform(**options):
     """
     Register a structure to spawn an instance at application start.
     
     Usage:
-    @model_structure(Actor)
-    class ActorStructure(JsonStructure):
+    @json_modelform()
+    class ActorForm(BaseForm):
         pass
     """
 
-    def wrapper(structure_class):
-        auto_spawn.register(model, structure_class, **options)
-        return structure_class
+    def wrapper(form_class):
+        auto_spawn.register(form_class, **options)
+        return form_class
 
     return wrapper

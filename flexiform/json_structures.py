@@ -9,40 +9,20 @@ from .validators import validate_no_underscore
 
 class JsonStructure:
     """
-    It is required to add 'extracted' information from the data-json field to
-    the ReportBuilder.
-    The ReportBuilder supports usage of model properties as 'pseudo-fields',
-    this is the most convenient bridge to our json-field contents.
-
-    The used properties are defined with the class Model.ReportBuilder.
-    These fields must be of the type 'Property' and will be accessed with
-    getattr().
-
-    This approach seems the least intrusive one. These are the known/tested
-    alternatives:
-    - custom metaclass for model (not safe in case of django-updates)
-    - override __getitem__ on model (side-effects, even hackier than this)
-    - override view classes of ReportBuilder (not safe for updates)
-
+    Set json-fields as model properties so they can be retrieved easily.
+        
     Usage:
-    - import implementation of structure in the apps ready-function.
     - a single underscore is reserved for the property name, so use CamelCase
       for form keywords and field names.
     """
-
-    @property
-    def form_list(self):
-        raise NotImplementedError
 
     def __init__(self, model_class):
         # setup instance variables
         self.model_class = model_class
         self.properties = []
         self.forms = collections.OrderedDict()
-        # setup forms/keywords, model properties and ReportBuilder attributes
         self.set_forms()
         self.prepare_properties()
-        self.setup_report_builder()
 
     def set_forms(self) -> None:
         """
@@ -50,13 +30,7 @@ class JsonStructure:
         """
         for keyword, form in self.form_list:
             validate_no_underscore(keyword)
-            self.forms[keyword] = self._set_form_meta(form, keyword)
-
-    def _set_form_meta(self, form: BaseForm, keyword: str) -> BaseForm:
-        form.Meta.keyword = keyword
-        form.Meta.model = self.model_class
-        form.Meta.exclude_fields_for_model = ['form_keyword']
-        return form
+            self.forms[keyword] = form
 
     def prepare_properties(self) -> None:
         for keyword, form in self.forms.items():
@@ -73,14 +47,6 @@ class JsonStructure:
         for keyword, form in self.forms.items():
             self._prepare_json_properties(keyword=keyword, form=form)
             self._prepare_repeating_fields_properties(keyword=keyword, form=form)
-        self.setup_report_builder()
-
-    def setup_report_builder(self) -> None:
-        """
-        Define the properties for usage within ReportBuilder.
-        """
-        self.model_class.ReportBuilder.extra = self.properties
-        self.model_class.ReportBuilder.exclude = ('data', )
 
     def _prepare_json_properties(self, keyword: str, form):
         for name, field, is_json in form.model_fields():
@@ -180,20 +146,15 @@ class JsonStructure:
 
 class AutoSpawn:
     """
-    Create an instance for all decorated structures and make it available
-    in the models meta options.
+    Create an instance for all decorated forms
     """
-
     _structures = []
-    Item = collections.namedtuple('Item', 'model structure')
 
-    def register(self, model, structure: JsonStructure):
-        self._structures.append(
-            self.Item(model=model, structure=structure)
-        )
+    def register(self, form: BaseForm):
+        self._structures.append(form)
 
     def start(self):
         for item in self._structures:
-            item.model._meta.structure = item.structure(model_class=item.model)
+            item.structure(model_class=item.Meta.model)
 
 auto_spawn = AutoSpawn()

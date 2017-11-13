@@ -60,7 +60,7 @@ class NetworkFormMixin:
         return context
 
 
-class BaseForm(forms.Form):
+class BaseForm(forms.ModelForm):
     template_name = 'flexiform/form/default.html'
 
     def __init__(self, *args, **kwargs) -> None:
@@ -94,8 +94,8 @@ class BaseForm(forms.Form):
 
     @property
     def label(self):
-        if hasattr(self.Meta, 'label'):
-            return self.Meta.label
+        if hasattr(self.Meta.model, 'label'):
+            return self.Meta.model.label
         return self.keyword
 
     @property
@@ -304,13 +304,16 @@ class BaseForm(forms.Form):
 
     @classmethod
     def model_fields(cls):
-        for name, field in cls.declared_fields.items():
-            if name not in cls.Meta.exclude_fields_for_model:
+        fields = {
+            **cls.base_fields, **cls.declared_fields
+        }
+        for name, field in fields.items():
+            exclude_fields = getattr(cls.Meta, 'exclude_fields_for_model', [])
+            if name not in exclude_fields:
                 yield name, field, isinstance(field, JsonMixin)
 
     def save(self, object_id=None):
         fields, json_fields = self.to_model(data=self.cleaned_data)
-
         # Create or update model with its own attributes
         obj, _ = self.Meta.model.objects.update_or_create(
             pk=object_id, defaults=fields
@@ -418,3 +421,11 @@ class BaseForm(forms.Form):
         data = ChainDict(data)
         data.set_key_chain(field.path, field.value)
         return data
+
+
+def get_form_list(*forms):
+    """
+    Setup a form list for the wizard based on the keywords as used for the json
+    keys.
+    """
+    return [(form.Meta.keyword, form) for form in forms]

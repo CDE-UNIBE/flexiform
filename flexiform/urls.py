@@ -1,8 +1,12 @@
 from importlib import import_module
+import logging
 
 from django.conf.urls import include, url
 from django.utils.module_loading import import_string
 from django.views import View
+
+
+logger = logging.getLogger(__name__)
 
 
 class DefaultPatterns:
@@ -34,12 +38,13 @@ class DefaultPatterns:
 
     @property
     def edit_view(self):
-        # Handle initial migration where model Actor is not yet available. In
-        # this case, form_list is not available. Return detail_view to prevent
+        # Handle initial migration where model is not yet available. In
+        # this case, form_list is not available. Return ListView to prevent
         # errors.
         try:
-            form_list = self.model._meta.structure.form_list
+            form_list = self._get_view('EditView').form_list
         except AttributeError:
+            logger.warning('Loaded ListView instead of EditView')
             return self._get_view('ListView').as_view()
         return self._get_view('EditView').as_view(
             url_name=f'{self.app_name}:edit', done_step_name='done',

@@ -17,4 +17,4 @@ def autodiscover():
     for app in app_names:
         # Fail silently
         with contextlib.suppress(Exception):
-            import_module(f'{app}.json_structures')
+            import_module(f'{app}.forms')
