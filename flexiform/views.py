@@ -29,11 +29,30 @@ class RetrieveMixin:
     """
     Get the object based on the from current form.
     """
+    # The 'pk' in the URL should always point to the same instance. Set this,
+    # it defaults to the model of the first form
+    routing_object_class = None
+
+    def get_routing_object(self):
+        return self.routing_object_class or self.get_first_form_model()
+
+    def get_first_form_model(self) -> Model:
+        """
+        Get the first model
+        """
+        try:
+            return list(self.form_list.values())[0].Meta.model
+        except (IndexError, AttributeError):
+            raise NotImplementedError('Please set a routing_object_class')
 
     def get_object(self, form):
+        # the object used for routing
         if 'pk' not in self.kwargs:
             return None
-        return get_object_or_404(klass=form.Meta.model, id=self.kwargs['pk'])
+        return get_object_or_404(
+            klass=self.get_routing_object(),
+            id=self.kwargs['pk']
+        )
 
     def get_form_initial(self, step: str) -> dict:
         if hasattr(super(), 'get_form_initial'):
@@ -42,21 +61,22 @@ class RetrieveMixin:
             initial = {}
 
         extra_method_name = f'get_{step}_initial'
-        if not initial and hasattr(self, extra_method_name):
-            initial.update(getattr(self, extra_method_name)())
+        if hasattr(self, extra_method_name):
+            return getattr(self, extra_method_name)()
 
-        if self.object:
-            form = dict(self.form_list).get(step)
-            if form:
-                initial.update(
-                    form.from_model(instance=self.object)
-                )
+        form = dict(self.form_list)[step]
+        is_model_form = hasattr(form.Meta, 'model')
+        is_routing_object_instance = self.object and is_model_form and issubclass(
+            form.Meta.model, type(self.object)
+        )
+        if is_routing_object_instance:
+            initial.update(form.from_model(instance=self.object))
 
         return initial
 
     @property
     def model_name(self):
-        return self.object.__class__.__name__.lower()
+        return self.get_routing_object().__name__.lower()
 
 
 class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
@@ -82,6 +102,7 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
             return HttpResponseRedirect(reverse(
                 view_name, kwargs={'step': first_step})
             )
+
         self.object = self.get_object(form=self.form_list[step])
         return super().dispatch(request, *args, **kwargs)
 
@@ -95,7 +116,8 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
 
     def process_step(self, form: BaseForm) -> dict:
         # setting the object is important for the next step url.
-        self.object = form.save(self.kwargs.get('pk', None))
+        if hasattr(form, 'save'):
+            self.object = form.save(self.kwargs.get('pk', None))
         return self.get_form_step_data(form)
 
     def get_context_data(self, form: BaseForm, **kwargs) -> dict:
@@ -107,7 +129,7 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
             'object': self.object,
             'labelled_steps': labelled_steps,
             'labelled_step': dict(labelled_steps).get(self.kwargs['step']),
-            'helptext': getattr(form.Meta, 'helptext', ''),
+            # 'helptext': getattr(form.Meta, 'helptext', ''),
             'step_position': step_position,
             'step_percent': step_position / context['wizard']['steps'].count * 100,
             'app_name': self.model_name,
@@ -152,12 +174,13 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
         # If the same step is to be reloaded again, do this instead.
         if self.request.POST.get('load_step'):
             return self.render_next_step(form, **kwargs)
+
         item_url = reverse(
             f'{self.model_name}:detail',
-            kwargs={'pk': self.object.id})
+            kwargs={'pk': self.kwargs['pk']})
         messages.success(
             self.request,
-            f'The <a href="{item_url}">entry</a> was successfully saved.')
+            f'<a href="{item_url}">entry</a> was successfully saved.')
         return HttpResponseRedirect(redirect_to=reverse(
             f'{self.model_name}:list'
         ))

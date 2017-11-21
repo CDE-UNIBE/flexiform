@@ -1,6 +1,7 @@
 import collections
 
 from django import forms
+from django.forms import BaseFormSet
 from django.template.loader import render_to_string
 from django.utils.module_loading import import_string
 
@@ -428,4 +429,9 @@ def get_form_list(*forms):
     Setup a form list for the wizard based on the keywords as used for the json
     keys.
     """
-    return [(form.Meta.keyword, form) for form in forms]
+    for form in forms:
+        if issubclass(form, BaseFormSet):
+            keyword = form.form.Meta.keyword
+        else:
+            keyword = form.Meta.keyword
+        yield (keyword, form )
