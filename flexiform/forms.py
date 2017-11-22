@@ -61,7 +61,19 @@ class NetworkFormMixin:
         return context
 
 
-class BaseForm(forms.ModelForm):
+class ReadOnlyMixin:
+
+    def __init__(self, *args, **kwargs):
+        self.readonly = kwargs.pop('readonly', False)
+        super().__init__(*args, **kwargs)
+
+        # None of the fields are required.
+        for field in self.fields.values():
+            field.disabled = self.readonly
+            field.required = False
+
+
+class BaseForm(ReadOnlyMixin, forms.ModelForm):
     template_name = 'flexiform/form/default.html'
 
     def __init__(self, *args, **kwargs) -> None:
@@ -69,7 +81,6 @@ class BaseForm(forms.ModelForm):
         Check for valid fieldnames (no characters used to access the json values
         as model properties) and create the required number of repeating fields.
         """
-        self.readonly = kwargs.pop('readonly', False)
         self._validate_fieldnames()
         super().__init__(*args, **kwargs)
         if self.has_repeating_fields:
@@ -78,11 +89,6 @@ class BaseForm(forms.ModelForm):
             self._setup_through_fields()
         if self.has_link_fields:
             self._setup_link_fields()
-
-        # None of the fields are required.
-        for field in self.fields.values():
-            field.disabled = self.readonly
-            field.required = False
 
     def _validate_fieldnames(self):
         for name, _, is_json_field in self.model_fields():
