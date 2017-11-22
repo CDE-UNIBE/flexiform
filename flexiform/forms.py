@@ -430,8 +430,4 @@ def get_form_list(*forms):
     keys.
     """
     for form in forms:
-        if issubclass(form, BaseFormSet):
-            keyword = form.form.Meta.keyword
-        else:
-            keyword = form.Meta.keyword
-        yield (keyword, form )
+        yield (form.Meta.keyword, form )

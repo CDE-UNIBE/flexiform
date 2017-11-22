@@ -3,6 +3,11 @@ from django.template.loader import render_to_string
 
 
 class BaseFormSet(formsets.BaseFormSet):
+    """
+    The forms Meta class is set to this FormSet for convenience, as routing and 
+    such happens with the Meta class.
+    #todo: discuss option to provide custom template_name
+    """
     template_name = 'flexiform/formset/base.html'
 
     def get_context(self):
@@ -22,16 +27,18 @@ class BaseFormSet(formsets.BaseFormSet):
             form.save(object_id)
 
 
-def flexiformset_factory(model, parent_model, form, formfield_callback=None,
-                         extra=1, can_delete=False,
+def flexiformset_factory(model, form, formfield_callback=None,
+                         extra=0, can_delete=False,
                          can_order=False, max_num=None, fields=None, exclude=None,
                          widgets=None, validate_max=False, localized_fields=None,
                          labels=None, help_texts=None, error_messages=None,
                          min_num=None, validate_min=False, field_classes=None):
 
-    form.Meta.parent_model = parent_model
+    formset = BaseFormSet
+    formset.Meta = form.Meta
+
     return modelformset_factory(model, form=form, formfield_callback=formfield_callback,
-                         formset=BaseFormSet, extra=extra, can_delete=can_delete,
+                         formset=formset, extra=extra, can_delete=can_delete,
                          can_order=can_order, max_num=max_num, fields=fields, exclude=exclude,
                          widgets=widgets, validate_max=validate_max, localized_fields=localized_fields,
                          labels=labels, help_texts=help_texts, error_messages=error_messages,
