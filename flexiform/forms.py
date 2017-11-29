@@ -101,8 +101,8 @@ class BaseForm(ReadOnlyMixin, forms.ModelForm):
 
     @property
     def label(self):
-        if hasattr(self.Meta.model, 'label'):
-            return self.Meta.model.label
+        if hasattr(self.Meta, 'label'):
+            return self.Meta.label
         return self.keyword
 
     @property

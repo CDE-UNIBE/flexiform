@@ -132,7 +132,8 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
             'labelled_step': dict(labelled_steps).get(self.kwargs['step']),
             'helptext': getattr(form.Meta, 'helptext', ''),
             'step_position': step_position,
-            'step_percent': step_position / context['wizard']['steps'].count * 100,
+            'step_percent': int(
+                step_position / context['wizard']['steps'].count * 100),
             'app_name': self.model_name,
         })
         return context
