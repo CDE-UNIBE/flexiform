@@ -22,6 +22,10 @@ class BaseFlexiFormSet(formsets.BaseFormSet):
             context=self.get_context(),
         )
 
+    def save(self, object_id):
+        for form in self:
+            form.save(object_id)
+
 
 def flexiformset_factory(model, form, formfield_callback=None,
                          extra=0, can_delete=False,
@@ -38,4 +42,5 @@ def flexiformset_factory(model, form, formfield_callback=None,
                          min_num=min_num, validate_min=validate_min, field_classes=field_classes)
 
     mff.Meta = form.Meta
+    mff.render = mff.as_table
     return mff
