@@ -3,6 +3,7 @@ import itertools
 import json
 import uuid
 from collections import OrderedDict, defaultdict
+from unittest.mock import Mock
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -666,6 +667,7 @@ class BaseFormViewMixin(RetrieveMixin, TemplateView):
     # collect the unique media assets instead of letting each form render its
     # own (possibly duplicate) assets
     form_media = Media()
+    steps = Mock()
 
     def get(self, request, *args, **kwargs):
         self.forms = self.get_readonly_forms()
@@ -694,6 +696,9 @@ class BaseFormViewMixin(RetrieveMixin, TemplateView):
                 continue
 
             self.object = self.get_object(form=form)
+            # Mock the 'current step' of the session wizard for the
+            # 'get_foo_initial' methods.
+            self.steps.current = keyword
             initial = self.get_form_initial(keyword)
             form_instance = form(prefix=keyword, initial=initial, readonly=True)
 
