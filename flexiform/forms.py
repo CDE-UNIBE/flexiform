@@ -217,6 +217,8 @@ class BaseForm(ReadOnlyMixin, forms.ModelForm):
             attribute values as dict and (2) JSON field values as list of
             JsonStructs.
         """
+        if not data:
+            return [], []
         fields = {}
         json_fields = []
         for name, field, is_json in self.model_fields():
@@ -436,4 +438,4 @@ def get_form_list(*forms):
     keys.
     """
     for form in forms:
-        yield (form.Meta.keyword, form )
+        yield (form.Meta.keyword, form)

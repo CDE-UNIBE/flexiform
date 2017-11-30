@@ -19,7 +19,7 @@ from django.views.generic.list import MultipleObjectMixin
 from formtools.wizard.views import NamedUrlWizardView
 
 from .fields import JsonChoiceField
-from .formsets import BaseFormSet
+from .formsets import BaseFlexiFormSet
 from .forms import BaseForm, ChainDict
 from .json_structures import JsonStructure
 
@@ -690,7 +690,7 @@ class BaseFormViewMixin(RetrieveMixin, TemplateView):
         ret = []
         for keyword, form in self.form_list:
             # Skip formsets for now.
-            if issubclass(form, BaseFormSet):
+            if issubclass(form, BaseFlexiFormSet):
                 continue
 
             self.object = self.get_object(form=form)
