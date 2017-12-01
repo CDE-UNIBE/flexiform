@@ -118,7 +118,9 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
     def process_step(self, form: BaseForm) -> dict:
         # setting the object is important for the next step url.
         if hasattr(form, 'save'):
-            self.object = form.save(self.kwargs.get('pk', None))
+            model_instance = form.save(self.kwargs.get('pk', None))
+            if not isinstance(form, BaseFlexiFormSet):
+                self.object = model_instance
         return self.get_form_step_data(form)
 
     def get_context_data(self, form: BaseForm, **kwargs) -> dict:
