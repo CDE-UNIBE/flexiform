@@ -23,7 +23,7 @@ class BaseFlexiFormSet(formsets.BaseFormSet):
         )
 
     def save(self, object_id):
-        for form in self:
+        for form in self.forms:
             form.save(object_id)
 
 

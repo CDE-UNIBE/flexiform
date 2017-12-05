@@ -8,6 +8,7 @@ from unittest.mock import Mock
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.gis.geos import Point
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models import F, Model, Q, QuerySet
 from django.forms import Media
 from django.http import (Http404, HttpResponseRedirect, JsonResponse,
@@ -73,6 +74,15 @@ class RetrieveMixin:
         )
         if is_routing_object_instance:
             initial.update(form.from_model(instance=self.object))
+        elif issubclass(form, BaseFlexiFormSet):
+            # Assume BaseFlexiFormSet instance is related to self.object
+            try:
+                rel_field = self.object._meta.get_field(form.model._meta.model_name)
+            except FieldDoesNotExist:
+                pass  # NOTE: Silence exception when related field doesn't exist
+            else:
+                object_set = getattr(self.object, rel_field.get_accessor_name())
+                initial = [form.form.from_model(instance=i) for i in object_set.all()]
 
         return initial
 
@@ -119,7 +129,9 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
     def process_step(self, form: BaseForm) -> dict:
         # setting the object is important for the next step url.
         if hasattr(form, 'save'):
-            self.object = form.save(self.kwargs.get('pk', None))
+            model_instance = form.save(self.kwargs.get('pk', None))
+            if not isinstance(form, BaseFlexiFormSet):
+                self.object = model_instance
         return self.get_form_step_data(form)
 
     def get_context_data(self, form: BaseForm, **kwargs) -> dict:
@@ -691,16 +703,16 @@ class BaseFormViewMixin(RetrieveMixin, TemplateView):
         """
         ret = []
         for keyword, form in self.form_list:
-            # Skip formsets for now.
-            if issubclass(form, BaseFlexiFormSet):
-                continue
-
             self.object = self.get_object(form=form)
             # Mock the 'current step' of the session wizard for the
             # 'get_foo_initial' methods.
             self.steps.current = keyword
             initial = self.get_form_initial(keyword)
-            form_instance = form(prefix=keyword, initial=initial, readonly=True)
+
+            if issubclass(form, BaseFlexiFormSet):
+                form_instance = form(prefix=keyword, initial=initial, form_kwargs={'readonly': True})
+            else:
+                form_instance = form(prefix=keyword, initial=initial, readonly=True)
 
             # Add form media
             self.form_media.add_js(form_instance.media._js)
