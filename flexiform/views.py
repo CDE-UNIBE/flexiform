@@ -458,7 +458,7 @@ class NetworkGraphMixin:
 
     ego_color = '#e41a1c'
 
-    def get_node_color(self, node: Model) -> str:
+    def get_node_color(self, node: Model, link: Model=None) -> str:
         """
         Get the color of the node as defined in settings.NETWORK_GRAPH_COLOR
         (in app's conf.py)
@@ -468,6 +468,24 @@ class NetworkGraphMixin:
         return getattr(
             settings, f'{node.__class__.__name__.upper()}_NETWORK_GRAPH_COLOR',
             'silver')
+
+    def get_node_radius(self, node: Model, link: Model=None) -> int:
+        return 8
+
+    def get_node_stroke_width(self, node: Model, link: Model=None) -> float:
+        return 1.5
+
+    def get_node_is_ego(self, node: Model, link: Model=None) -> bool:
+        return node == self.object
+
+    def get_link_distance(self, link: Model) -> int or None:
+        return None
+
+    def get_link_stroke_width(self, link: Model) -> float:
+        return 2.5
+
+    def get_link_stroke_dasharray(self, link: Model) -> str:
+        return '0, 0'
 
     @staticmethod
     def _get_node_id(node: Model) -> str:
@@ -492,19 +510,22 @@ class NetworkGraphMixin:
             'tooltip': self.get_link_tooltip(link),
             'value': 5,
             'stroke': '#333',
-            'stroke_width': 2.5,
+            'stroke_width': self.get_link_stroke_width(link),
             'stroke_opacity': 1,
+            'stroke_dasharray': self.get_link_stroke_dasharray(link),
+            'distance': self.get_link_distance(link),
         }
 
-    def get_node_attributes(self, node: Model) -> dict:
+    def get_node_attributes(self, node: Model, link: Model=None) -> dict:
         """Return the attributes needed to draw a node in the graph."""
         return {
             'id': self._get_node_id(node),
             'tooltip': self.get_node_tooltip(node),
-            'radius': 8,
+            'radius': self.get_node_radius(node, link),
             'stroke': '#333',
-            'stroke_width': 1.5,
-            'fill': self.get_node_color(node),
+            'stroke_width': self.get_node_stroke_width(node, link),
+            'fill': self.get_node_color(node, link),
+            'is_ego': self.get_node_is_ego(node, link),
         }
 
     def get_source_target_nodes(
@@ -553,7 +574,7 @@ class NetworkGraphMixin:
             # Add the node at the end of the link if not collected already.
             end_node = getattr(link, link_end)
             if self._get_node_id(end_node) not in self.get_node_ids():
-                self.nodes.append(self.get_node_attributes(end_node))
+                self.nodes.append(self.get_node_attributes(end_node, link))
 
             if link.id in self.get_link_ids():
                 continue
@@ -668,7 +689,7 @@ class NetworkGraphMixin:
             'div_id': 'x' + str(uuid.uuid4()).replace('-', ''),
             'nodes': json.dumps(self.nodes),
             'links': json.dumps(self.links),
-            'graph_options': self.get_graph_options(),
+            'graph_options': json.dumps(self.get_graph_options()),
         })
         return context
 
