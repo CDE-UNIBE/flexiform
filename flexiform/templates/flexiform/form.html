@@ -55,14 +55,16 @@
       {{ wizard.management_form }}
       {{ wizard.form.render }}
       <div class="form-buttons">
-        {% if wizard.steps.prev %}
-          <button class="button" type="submit" data-save-step="{{ wizard.steps.prev }}">{% svg_icon 'caret_left' %}{% trans "Previous" %}</button>
-        {% endif %}
-        {% if wizard.steps.next %}
-          <button class="button" type="submit">{% trans "Next" %}{% svg_icon 'caret_right' classes='right' %}</button>
-        {% else %}
-          <button class="button success" type="submit">{% svg_icon 'checkmark' %}{% trans "Finish" %}</button>
-        {% endif %}
+        {% block form_buttons %}
+          {% if wizard.steps.prev %}
+            <button class="button" type="submit" data-save-step="{{ wizard.steps.prev }}">{% svg_icon 'caret_left' %}{% trans "Previous" %}</button>
+          {% endif %}
+          {% if wizard.steps.next %}
+            <button class="button" type="submit">{% trans "Next" %}{% svg_icon 'caret_right' classes='right' %}</button>
+          {% else %}
+            <button class="button success" type="submit">{% svg_icon 'checkmark' %}{% trans "Finish" %}</button>
+          {% endif %}
+        {% endblock %}
       </div>
   </form>
 

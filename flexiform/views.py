@@ -520,7 +520,7 @@ class NetworkGraphMixin:
         """Return the attributes needed to draw a node in the graph."""
         return {
             'id': self._get_node_id(node),
-            'tooltip': self.get_node_tooltip(node),
+            'tooltip': self.get_node_tooltip(node, link),
             'radius': self.get_node_radius(node, link),
             'stroke': '#333',
             'stroke_width': self.get_node_stroke_width(node, link),
@@ -536,10 +536,10 @@ class NetworkGraphMixin:
         """
         return source_node, target_node
 
-    def get_node_tooltip(self, node: Model) -> str:
+    def get_node_tooltip(self, node: Model, link: Model=None) -> str:
         """Return the content rendered in the tooltip of the node."""
         try:
-            return node.get_network_graph_tooltip()
+            return node.get_network_graph_tooltip(link)
         except AttributeError:
             return str(node)
 
