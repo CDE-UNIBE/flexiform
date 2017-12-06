@@ -32,10 +32,15 @@ def flexiformset_factory(model, form, formfield_callback=None,
                          can_order=False, max_num=None, fields=None, exclude=None,
                          widgets=None, validate_max=False, localized_fields=None,
                          labels=None, help_texts=None, error_messages=None,
-                         min_num=None, validate_min=False, field_classes=None):
+                         min_num=None, validate_min=False, field_classes=None,
+                         template_name=None):
+
+    formset = BaseFlexiFormSet
+    if template_name:
+        formset.template_name = template_name
 
     mff = modelformset_factory(model, form=form, formfield_callback=formfield_callback,
-                         formset=BaseFlexiFormSet, extra=extra, can_delete=can_delete,
+                         formset=formset, extra=extra, can_delete=can_delete,
                          can_order=can_order, max_num=max_num, fields=fields, exclude=exclude,
                          widgets=widgets, validate_max=validate_max, localized_fields=localized_fields,
                          labels=labels, help_texts=help_texts, error_messages=error_messages,
