@@ -15,6 +15,7 @@ from django.http import (Http404, HttpResponseRedirect, JsonResponse,
                          StreamingHttpResponse)
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.views.generic.list import MultipleObjectMixin
@@ -178,7 +179,7 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
         """
         Show a success message that the step was saved.
         """
-        messages.success(self.request, 'The section was successfully saved.')
+        messages.success(self.request, _('The section was successfully saved.'))
         return super().render_next_step(form, **kwargs)
 
     def render_done(self, form, **kwargs):
@@ -193,9 +194,11 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
         item_url = reverse(
             f'{self.model_name}:detail',
             kwargs={'pk': self.kwargs['pk']})
+        item_name = self.object._meta.verbose_name.title()
+        item_link = f'<a href="{item_url}">{item_name}</a>'
         messages.success(
             self.request,
-            f'<a href="{item_url}">entry</a> was successfully saved.')
+            _('%(object)s was successfully saved.') % {'object': item_link})
         return HttpResponseRedirect(redirect_to=reverse(
             f'{self.model_name}:list'
         ))
@@ -999,5 +1002,5 @@ class BaseDeleteMixin:
         return reverse(f'{self.model.__name__.lower()}:list')
 
     def delete(self, request, *args, **kwargs):
-        messages.success(request, 'The object was successfully deleted.')
+        messages.success(request, _('The object was successfully deleted.'))
         return super().delete(request, *args, **kwargs)
