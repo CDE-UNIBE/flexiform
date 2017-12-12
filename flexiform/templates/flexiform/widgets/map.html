@@ -58,7 +58,7 @@
       <span class="clear_features"><a class="button alert" href="javascript:{{ module }}.clearFeatures()">{% svg_icon 'bin' %}{% trans "Delete all Features" %}</a></span>
     </div>
   {% endif %}
-  {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
+  {% if display_raw %}<p>Debugging window (serialized value)</p>{% endif %}
   <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
   {% compress js %}
     <script type="text/javascript">

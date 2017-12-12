@@ -10,7 +10,7 @@
 
 
 {% if not disabled %}
-  <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">Search an item by name or by its questionnaire ID. If the item does not yet exist, you can <a href="{% url field_options.route_app_name|add:':add' %}">create a new one</a>.</p></div>
+  <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text"> {% trans "Search an object by name or by its questionnaire ID." %}<a href="{% url field_options.route_app_name|add:':add' %}">{% trans "If the object does not yet exist, you can create a new one." %}</a></p></div>
 {% endif %}
 
 <div class="{{ widget.name }}-container columns-widget">

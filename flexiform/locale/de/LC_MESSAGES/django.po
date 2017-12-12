@@ -1,0 +1,130 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-07 23:13+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/flexiform/crud/object_confirm_delete.html:8
+msgid "Are you sure?"
+msgstr "Sind Sie sicher?"
+
+#: templates/flexiform/crud/object_confirm_delete.html:9
+#, python-format
+msgid ""
+"You are about to delete %(object)s. This will delete all involvements of the "
+"object, all links to other objects will be deleted. Please confirm."
+msgstr ""
+"Sie sind daran, %(object)s zu löschen. Dadurch werden alle Links dieses "
+"Objekts zu anderen Objekten ebenfalls gelöscht. Bitte bestätigen."
+
+#: templates/flexiform/crud/object_confirm_delete.html:12
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: templates/flexiform/crud/object_confirm_delete.html:13
+msgid "Delete"
+msgstr "Löschen"
+
+#: templates/flexiform/form.html:22
+msgid "You are currently editing:"
+msgstr "Sie editieren momentan:"
+
+#: templates/flexiform/form.html:33
+msgid "--- Jump to specific section ---"
+msgstr "--- Zu bestimmtem Abschnitt springen ---"
+
+#: templates/flexiform/form.html:60
+msgid "Previous"
+msgstr "Zurück"
+
+#: templates/flexiform/form.html:63
+msgid "Next"
+msgstr "Weiter"
+
+#: templates/flexiform/form.html:65
+msgid "Finish"
+msgstr "Abschliessen"
+
+#: templates/flexiform/widgets/columns.html:45
+#: templates/flexiform/widgets/link.html:51
+#: templates/flexiform/widgets/through.html:80
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: templates/flexiform/widgets/link.html:15
+msgid "No links selected yet."
+msgstr "Noch keine Links ausgewählt."
+
+#: templates/flexiform/widgets/link.html:31
+#: templates/flexiform/widgets/through.html:43
+msgid "Search"
+msgstr "Suche"
+
+#: templates/flexiform/widgets/map.html:32
+msgid ""
+"Only the point on the map is submitted. Other fields (search or GPS field) "
+"next to the map are only used to zoom to a location or place a point on the "
+"map. These fields are not submitted."
+msgstr ""
+"Nur der Punkt auf der Karte wird übermittelt. Andere Felder (Suche oder GPS "
+"Feld) neben der Karte werden nur für die Interaktion mit der Karte "
+"verwendet. Diese Felder werden nicht übermittelt."
+
+#: templates/flexiform/widgets/map.html:33
+msgid "Only one point can be on the map!"
+msgstr "Nur ein Punkt kann auf der Karte gesetzt werden!"
+
+#: templates/flexiform/widgets/map.html:42
+msgid "Search and zoom to location"
+msgstr "Einen Ort suchen und hinzoomen"
+
+#: templates/flexiform/widgets/map.html:46
+msgid "GPS coordinates"
+msgstr "GPS Koordinaten"
+
+#: templates/flexiform/widgets/map.html:55
+msgid "Go"
+msgstr "Los"
+
+#: templates/flexiform/widgets/map.html:58
+msgid "Delete all Features"
+msgstr "Alle Features löschen"
+
+#: templates/flexiform/widgets/through.html:13
+msgid "Search an object by name or by its questionnaire ID."
+msgstr "Suche ein Objekt nach Name oder Questionnaire ID."
+
+#: templates/flexiform/widgets/through.html:13
+msgid "If the object does not yet exist, you can create a new one."
+msgstr "Wenn das Objekt noch nicht existiert, können Sie es neu erstellen."
+
+#: templates/flexiform/widgets/through.html:20
+msgid "Link"
+msgstr "Link"
+
+#: views.py:182
+msgid "The section was successfully saved."
+msgstr "Der Abschnitt wurde erfolgreich gespeichert."
+
+#: views.py:201
+#, python-format
+msgid "%(object)s was successfully saved."
+msgstr "%(object)s wurde erfolgreich gespeichert."
+
+#: views.py:1005
+msgid "The object was successfully deleted."
+msgstr "Das Objekt wurde erfolgreich gelöscht."
