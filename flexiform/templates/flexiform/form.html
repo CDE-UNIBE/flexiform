@@ -49,7 +49,7 @@
   <form action="" method="post" class="js-main-form main-form">
     {% csrf_token %}
       {% if helptext and not disabled %}
-        <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">{{ helptext }}</p></div>
+        <div class="callout primary">{% svg_icon 'info' %}<p class="helptext-text">{{ helptext|safe }}</p></div>
       {% endif %}
 
       {{ wizard.management_form }}
