@@ -184,7 +184,7 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
 
     def render_done(self, form, **kwargs):
         """
-        Simply redirect to the list view, as data is stored after each submit.
+        Simply redirect to success url, as data is stored after each submit.
         Show a success message that the item was saved.
         """
         # If the same step is to be reloaded again, do this instead.
@@ -199,9 +199,10 @@ class BaseFormMixin(LoginRequiredMixin, RetrieveMixin, NamedUrlWizardView):
         messages.success(
             self.request,
             _('%(object)s was successfully saved.') % {'object': item_link})
-        return HttpResponseRedirect(redirect_to=reverse(
-            f'{self.model_name}:list'
-        ))
+        return HttpResponseRedirect(redirect_to=self.get_success_url())
+
+    def get_success_url(self):
+        return reverse(f'{self.model_name}:list')
 
     def get_labelled_steps(self):
         """
